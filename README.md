@@ -170,24 +170,6 @@ docker run -p 8501:8501 \
 
 > Mounting `cache/` and `models/` as volumes means FastF1 data and trained models **persist between container restarts**, avoiding repeated downloads.
 
-### Docker Compose (optional)
-
-```yaml
-version: "3.9"
-services:
-  analytics:
-    build: .
-    ports:
-      - "8501:8501"
-    volumes:
-      - ./cache:/app/cache
-      - ./models:/app/models
-    restart: unless-stopped
-```
-
-```bash
-docker compose up --build
-```
 
 ---
 
@@ -294,131 +276,7 @@ joblib.dump → models/lap_time_model.pkl
 
 ---
 
-## 📦 Module API Reference
 
-### `data_loader.py`
-
-```python
-load_session(year: int, race: str, session_type: str) -> fastf1.core.Session
-```
-Load a FastF1 session with telemetry and lap data. Results are cached to `cache/`.
-
-```python
-get_driver_laps(session, driver: str) -> fastf1.core.Laps
-```
-Return all laps for a driver in the session.
-
-```python
-get_fastest_lap(session, driver: str) -> fastf1.core.Lap
-```
-Return the single fastest valid lap for a driver.
-
-```python
-extract_telemetry(lap) -> pd.DataFrame
-```
-Extract raw telemetry (Speed, Throttle, Brake, Gear, RPM, DRS, X, Y, Distance).
-
-```python
-get_available_drivers(session) -> list[str]
-get_compound_map(session, driver) -> pd.DataFrame
-```
-
----
-
-### `telemetry_processing.py`
-
-```python
-normalise_distance(telemetry, n_points=1000) -> pd.DataFrame
-```
-Resample telemetry onto a uniform distance grid via linear interpolation.
-
-```python
-align_telemetry(tel_a, tel_b, n_points=1000) -> tuple[pd.DataFrame, pd.DataFrame]
-```
-Align two laps to the same distance grid, cropped to the shorter lap's length.
-
-```python
-segment_telemetry(telemetry, segment_length_m=200.0) -> pd.DataFrame
-```
-Bin the lap into fixed-distance segments, compute avg speed / throttle / brake / gear per bin.
-
-```python
-compute_lap_delta(tel_a, tel_b) -> pd.DataFrame   # columns: Distance, Delta
-```
-Integrate speed over distance to derive a cumulative time gap between two laps.
-
-```python
-extract_lap_features(telemetry) -> dict
-```
-Compute scalar statistics for ML feature extraction.
-
----
-
-### `analytics.py`
-
-```python
-compare_driver_telemetry(session, driver_a, driver_b, n_points=1000) -> dict
-```
-Returns `{"tel_a", "tel_b", "driver_a", "driver_b", "lap_a", "lap_b"}`.
-
-```python
-lap_delta_analysis(session, driver_a, driver_b) -> pd.DataFrame
-sector_comparison(session, driver_a, driver_b) -> pd.DataFrame
-tire_strategy_analysis(session, driver) -> pd.DataFrame
-tire_strategy_both_drivers(session, driver_a, driver_b) -> pd.DataFrame
-segment_performance_comparison(session, driver_a, driver_b, segment_length_m=200) -> pd.DataFrame
-build_lap_feature_dataset(session, drivers=None) -> pd.DataFrame
-```
-
----
-
-### `visualizations.py`
-
-All functions return a `plotly.graph_objects.Figure` for use with `st.plotly_chart()`.
-
-```python
-speed_trace(tel_a, tel_b, driver_a, driver_b)     -> go.Figure
-throttle_trace(tel_a, tel_b, driver_a, driver_b)  -> go.Figure
-brake_trace(tel_a, tel_b, driver_a, driver_b)     -> go.Figure
-lap_delta_plot(delta_df, driver_a, driver_b)       -> go.Figure
-track_map(telemetry, colour_by="Speed", driver="") -> go.Figure
-tire_strategy_chart(strategy_df, driver_a, driver_b) -> go.Figure
-segment_bar_chart(segment_df, driver_a, driver_b)  -> go.Figure
-telemetry_overview(tel_a, tel_b, driver_a, driver_b) -> go.Figure  # stacked 3-panel
-```
-
----
-
-### `ml_model.py`
-
-```python
-train_model(lap_df: pd.DataFrame) -> dict
-# Returns: {"pipeline", "metrics", "feature_importance", "n_train", "n_test"}
-
-save_model(pipeline, path=MODEL_PATH) -> None
-load_model(path=MODEL_PATH) -> Pipeline
-
-predict_lap_time(features: dict, pipeline=None) -> float  # seconds
-format_lap_time(seconds: float) -> str                    # "M:SS.mmm"
-```
-
----
-
-## 📋 Requirements
-
-```
-fastf1==3.3.9
-pandas==2.2.2
-numpy==1.26.4
-plotly==5.22.0
-streamlit==1.36.0
-scikit-learn==1.5.0
-joblib==1.4.2
-matplotlib==3.9.0
-requests==2.32.3
-```
-
----
 
 ## 🗂️ Cache & Storage
 
@@ -449,17 +307,6 @@ rm models/lap_time_model.pkl
 
 ---
 
-## 🤝 Contributing
-
-Contributions are welcome. Please open an issue to discuss proposed changes before submitting a pull request.
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/my-feature`
-3. Commit your changes: `git commit -m 'Add my feature'`
-4. Push to the branch: `git push origin feature/my-feature`
-5. Open a Pull Request
-
----
 
 ## 📄 License
 
@@ -469,14 +316,7 @@ F1 data is sourced from the official Formula 1 timing feed via the [FastF1](http
 
 ---
 
-## 🙏 Acknowledgements
-
-- [FastF1](https://github.com/theOehrly/Fast-F1) — the incredible open-source library that makes F1 data accessible
-- [Streamlit](https://streamlit.io) — for making data apps fast to build and beautiful to use
-- [Plotly](https://plotly.com) — for interactive, production-quality charts
-
----
 
 <div align="center">
-  <sub>Built with ❤️ and way too much interest in aerodynamic downforce</sub>
+  <sub>Wasn't it simply lovely?❤️  </sub>
 </div>
